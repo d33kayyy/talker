@@ -22,8 +22,13 @@ class ChatBox extends Component {
         this.send = this.send.bind(this);
         this.state = {
             message: '',
-            messages: []
-        }
+            messages: [],
+            isLoggedIn: false
+        };
+
+        this.login = this.login.bind(this);
+        this.logout = this.logout.bind(this);
+
     }
 
     componentDidMount() {
@@ -66,45 +71,65 @@ class ChatBox extends Component {
         return (
             <div className="container">
                 <div className="col-md-4 col-md-offset-4">
-                    <div className="form-group">
-                        <input className="form-control" placeholder="E-mail" name="email" type="text"/>
-                    </div>
-                    <div className="form-group">
-                        <input className="form-control" placeholder="Password" name="password"
-                               type="password"/>
-                    </div>
-                    <input className="btn btn-lg btn-success btn-block" type="submit" value="Login"/>
+                    <button className="btn" onClick={this.login}>Login Anonymously</button>
                 </div>
             </div>
         )
+    }
+
+    login(event) {
+        const auth = firebase.auth();
+        const promise = auth.signInAnonymously();
+        promise.catch(e => console.log(e.message));
+
+        this.setState({
+            isLoggedIn: true
+        });
+
+        console.log(firebase.auth().currentUser)
+    }
+
+    logout(event) {
+        const auth = firebase.auth();
+        auth.signOut();
+
+        this.setState({
+            isLoggedIn: false
+        })
     }
 
     renderChat() {
         const messages = Object.keys(this.state.messages).map((key) => {
             console.log(key);
             return (
-                <li key={key}>{this.state.messages[key].text}</li>
+                <li key={key}>
+                    {/*{(firebase.auth().currentUser.uid === this.state.messages[key].fromID)} ? You : Anonymous -*/}
+                    {this.state.messages[key].text}
+                </li>
             )
         });
 
         return (
-            <div>
+            <div className="container">
+                <div className="col-md-2 col-md-offset-2">
+                    <button className="btn" onClick={this.logout}>Logout</button>
+                </div>
 
-                <input type="text" placeholder="Message" onChange={this.updateMsg}/>
-                <button onClick={this.send}>Send</button>
+                <div className="col-md-4">
+                    <input className="form-control" type="text" placeholder="Message" onChange={this.updateMsg}/>
+                    <button className="btn" onClick={this.send} disabled={!this.state.message}>Send</button>
 
-                <ul>
-                    {messages}
-                </ul>
+                    <ul>
+                        {messages}
+                    </ul>
+                </div>
             </div>
         )
     }
 
     render() {
         return (
-            // (firebase.auth().currentUser) ?
-            this.renderChat()
-            // : this.renderForm()
+            (this.state.isLoggedIn) ? this.renderChat() : this.renderForm()
         )
     }
 }
