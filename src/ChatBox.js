@@ -13,6 +13,7 @@ import * as firebase from 'firebase';
 //     }
 // }
 
+// TODO: Login/Logout bug
 
 class ChatBox extends Component {
 
@@ -56,15 +57,21 @@ class ChatBox extends Component {
     }
 
     send(event) {
-        console.log('send: ' + this.state.message);
-        // const fromID = firebase.auth().currentUser.uid;
+
+        // construct the message
         const nextMsg = {
             fromID: firebase.auth().currentUser.uid,
             text: this.state.message
         };
 
-        firebase.database().ref('messages').push(nextMsg);
+        // create a new node (push the message) on Firebase
+        const promise = firebase.database().ref('messages').push(nextMsg);
+        promise.catch(e => console.log(e.message));
 
+        console.log('send: ' + this.state.message);
+
+        // Clear text input
+        this.textInput.value = '';
     }
 
     renderForm() {
@@ -135,7 +142,10 @@ class ChatBox extends Component {
                 </div>
 
                 <div className="col-md-4">
-                    <input className="form-control" type="text" placeholder="Message" onChange={this.updateMsg}/>
+                    <input className="form-control" type="text" placeholder="Message"
+                           onChange={this.updateMsg}
+                           ref={(input) => this.textInput = input}/>
+
                     <button className="btn" onClick={this.send} disabled={!this.state.message}>Send</button>
 
                     <ul>
