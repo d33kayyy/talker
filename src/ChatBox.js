@@ -31,23 +31,23 @@ class ChatBox extends Component {
 
     }
 
-    componentDidMount() {
-        firebase.database().ref('messages').on('value', (snapshot) => {
-            const msg = snapshot.val();
-            console.log(Object.keys(msg));
-
-
-            // var newData = this.state.messages.concat(msg);
-            // console.log(newData);
-
-            if (msg != null) {
-                this.setState({
-                    messages: msg
-                })
-            }
-
-        })
-    }
+    // componentDidMount() {
+    //     firebase.database().ref('messages').on('value', (snapshot) => {
+    //         const msg = snapshot.val();
+    //         // console.log(Object.keys(msg));
+    //
+    //
+    //         // var newData = this.state.messages.concat(msg);
+    //         // console.log(newData);
+    //
+    //         if (msg != null) {
+    //             this.setState({
+    //                 messages: msg
+    //             })
+    //         }
+    //
+    //     })
+    // }
 
     updateMsg(event) {
         this.setState({
@@ -57,9 +57,9 @@ class ChatBox extends Component {
 
     send(event) {
         console.log('send: ' + this.state.message);
-
+        // const fromID = firebase.auth().currentUser.uid;
         const nextMsg = {
-            // id: this.state.messages.length,
+            fromID: firebase.auth().currentUser.uid,
             text: this.state.message
         };
 
@@ -86,6 +86,17 @@ class ChatBox extends Component {
             isLoggedIn: true
         });
 
+        firebase.database().ref('messages').on('value', (snapshot) => {
+            const msg = snapshot.val();
+
+            if (msg != null) {
+                this.setState({
+                    messages: msg
+                })
+            }
+
+        });
+
         console.log(firebase.auth().currentUser)
     }
 
@@ -98,13 +109,21 @@ class ChatBox extends Component {
         })
     }
 
+    displayUser(uid) {
+
+        if (firebase.auth().currentUser && firebase.auth().currentUser.uid === uid) {
+            return <span>You</span>;
+        } else {
+            return <span>Anonymous</span>;
+        }
+    }
+
     renderChat() {
         const messages = Object.keys(this.state.messages).map((key) => {
-            console.log(key);
+            // console.log(key);
             return (
                 <li key={key}>
-                    {/*{(firebase.auth().currentUser.uid === this.state.messages[key].fromID)} ? You : Anonymous -*/}
-                    {this.state.messages[key].text}
+                    {this.displayUser(this.state.messages[key].fromID)}: {this.state.messages[key].text}
                 </li>
             )
         });
