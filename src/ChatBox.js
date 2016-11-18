@@ -13,8 +13,6 @@ import * as firebase from 'firebase';
 //     }
 // }
 
-// TODO: Login/Logout bug
-
 class ChatBox extends Component {
 
     constructor(props, context) {
@@ -23,32 +21,26 @@ class ChatBox extends Component {
         this.send = this.send.bind(this);
         this.state = {
             message: '',
-            messages: [],
-            isLoggedIn: false
+            messages: []
         };
-
-        this.login = this.login.bind(this);
-        this.logout = this.logout.bind(this);
-
     }
 
-    // componentDidMount() {
-    //     firebase.database().ref('messages').on('value', (snapshot) => {
-    //         const msg = snapshot.val();
-    //         // console.log(Object.keys(msg));
-    //
-    //
-    //         // var newData = this.state.messages.concat(msg);
-    //         // console.log(newData);
-    //
-    //         if (msg != null) {
-    //             this.setState({
-    //                 messages: msg
-    //             })
-    //         }
-    //
-    //     })
-    // }
+    componentDidMount() {
+        const auth = firebase.auth();
+        const promise = auth.signInAnonymously();
+        promise.catch(e => console.log(e.message));
+
+        // sync
+        firebase.database().ref('messages').on('value', (snapshot) => {
+            const msg = snapshot.val();
+
+            if (msg != null) {
+                this.setState({
+                    messages: msg
+                })
+            }
+        });
+    }
 
     updateMsg(event) {
         this.setState({
@@ -72,57 +64,23 @@ class ChatBox extends Component {
 
         // Clear text input
         this.textInput.value = '';
-    }
-
-    renderForm() {
-        return (
-            <div className="container">
-                <div className="col-md-4 col-md-offset-4">
-                    <button className="btn" onClick={this.login}>Login Anonymously</button>
-                </div>
-            </div>
-        )
-    }
-
-    login(event) {
-        const auth = firebase.auth();
-        const promise = auth.signInAnonymously();
-        promise.catch(e => console.log(e.message));
-
         this.setState({
-            isLoggedIn: true
-        });
-
-        firebase.database().ref('messages').on('value', (snapshot) => {
-            const msg = snapshot.val();
-
-            if (msg != null) {
-                this.setState({
-                    messages: msg
-                })
-            }
-
-        });
-
-        console.log(firebase.auth().currentUser)
-    }
-
-    logout(event) {
-        const auth = firebase.auth();
-        auth.signOut();
-
-        this.setState({
-            isLoggedIn: false
+            message: ''
         })
     }
 
-    displayUser(uid) {
+    displayUser(message) {
+        var name = '';
 
-        if (firebase.auth().currentUser && firebase.auth().currentUser.uid === uid) {
-            return <span>You</span>;
+        if (firebase.auth().currentUser && firebase.auth().currentUser.uid === message.fromID) {
+            name = 'You';
         } else {
-            return <span>Anonymous</span>;
+            name = 'Anonymous';
         }
+
+        return (
+            <span><strong>{name}</strong>: {message.text}</span>
+        )
     }
 
     renderChat() {
@@ -130,17 +88,13 @@ class ChatBox extends Component {
             // console.log(key);
             return (
                 <li key={key}>
-                    {this.displayUser(this.state.messages[key].fromID)}: {this.state.messages[key].text}
+                    {this.displayUser(this.state.messages[key])}
                 </li>
             )
         });
 
         return (
             <div className="container">
-                <div className="col-md-2 col-md-offset-2">
-                    <button className="btn" onClick={this.logout}>Logout</button>
-                </div>
-
                 <div className="col-md-4">
                     <input className="form-control" type="text" placeholder="Message"
                            onChange={this.updateMsg}
@@ -158,7 +112,7 @@ class ChatBox extends Component {
 
     render() {
         return (
-            (this.state.isLoggedIn) ? this.renderChat() : this.renderForm()
+            this.renderChat()
         )
     }
 }
