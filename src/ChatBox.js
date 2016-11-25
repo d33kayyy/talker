@@ -17,8 +17,6 @@ class ChatBox extends Component {
     componentWillMount() {
         // authenticate user to get access to the database
         this.auth = firebase.auth();
-        const promise = this.auth.signInAnonymously();
-        promise.catch(e => console.log(e.message));
 
         // sync
         this.messageRef = firebase.database().ref('messages');
@@ -29,14 +27,6 @@ class ChatBox extends Component {
                 this.setState({
                     messages: msg
                 })
-            }
-        });
-
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                // User is signed in.
-            } else {
-                // No user is signed in.
             }
         });
 
