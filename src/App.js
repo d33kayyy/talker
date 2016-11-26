@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import * as firebase from 'firebase';
-import ChatBox from './ChatBox';
+import UserPanel from './UserPanel';
 
 class App extends Component {
 
@@ -34,7 +34,7 @@ class App extends Component {
 
                 {this.state.loggedIn ? (
                     <div>
-                        <ChatBox/>
+                        <UserPanel/>
                     </div>
                 ) : (
                     <h2>Loading</h2>

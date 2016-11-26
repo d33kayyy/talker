@@ -20,38 +20,16 @@ class ChatBox extends Component {
 
         // sync
         this.messageRef = firebase.database().ref('messages');
-        this.messageRef.on('value', (snapshot) => {
-            const msg = snapshot.val();
+        // this.messageRef.on('value', (snapshot) => {
+        //     const msg = snapshot.val();
+        //
+        //     if (msg != null) {
+        //         this.setState({
+        //             messages: msg
+        //         })
+        //     }
+        // });
 
-            if (msg != null) {
-                this.setState({
-                    messages: msg
-                })
-            }
-        });
-
-    }
-
-    componentWillUpdate() {
-        // Add ourselves to presence list when online.
-        const amOnline = firebase.database().ref('.info/connected');
-        const userRef = firebase.database().ref('presence/' + this.auth.currentUser.uid);
-        amOnline.on('value', function (snapshot) {
-            if (snapshot.val()) {
-                userRef.onDisconnect().remove();
-                userRef.set(true);
-            }
-        });
-
-        // Number of online users is the number of objects in the presence list.
-        const listRef = firebase.database().ref('presence');
-        listRef.on("value", function (snap) {
-            console.log("# of online users = " + snap.numChildren());
-        });
-    }
-
-    componentWillUnmount() {
-        this.messageRef.off();
     }
 
     updateMsg(event) {
@@ -109,19 +87,17 @@ class ChatBox extends Component {
         });
 
         return (
-            <div className="container">
-                <div className="col-md-offset-3 col-md-6">
-                    <form onSubmit={this.send}>
-                        <input className="form-control" type="text" placeholder="Message"
-                               onChange={this.updateMsg}
-                               ref={(input) => this.textInput = input}/>
+            <div className="col-md-offset-3 col-md-6">
+                <form onSubmit={this.send}>
+                    <input className="form-control" type="text" placeholder="Message"
+                           onChange={this.updateMsg}
+                           ref={(input) => this.textInput = input}/>
 
-                        <input className="btn" type="submit" disabled={!this.state.message} value='Send'/>
-                    </form>
-                    <ul>
-                        {messages}
-                    </ul>
-                </div>
+                    <input className="btn" type="submit" disabled={!this.state.message} value='Send'/>
+                </form>
+                <ul>
+                    {messages}
+                </ul>
             </div>
         )
     }
