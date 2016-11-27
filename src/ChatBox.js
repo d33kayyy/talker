@@ -29,7 +29,6 @@ class ChatBox extends Component {
         //         })
         //     }
         // });
-
     }
 
     updateMsg(event) {

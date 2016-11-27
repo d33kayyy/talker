@@ -58,6 +58,8 @@ class UserPanel extends Component {
             showChat: true,
             peer: e.target.value
         });
+
+        console.log(this.state.showChat);
     }
 
     render() {
@@ -66,21 +68,29 @@ class UserPanel extends Component {
         return (
             (this.state.showChat)
                 ? <ChatBox peer={this.state.peer}/>
-                : <UserList onlineUser={this.state.onlineUser}/>
+                : ( <ul>
+                {this.state.onlineUser.map(uid => (
+                    <li key={uid}>
+                        <button value={uid} onClick={this.handleClick}>{uid}</button>
+                    </li>
+                ))}
+                </ul>)
         )
     }
 }
 
-class UserList extends React.Component {
-    render() {
-        return (
-            <ul>
-                {this.props.onlineUser.map(uid => (
-                    <li key={uid}><input type="button" className="btn" onClick={this.handleClick} value={uid}/></li>
-                ))}
-            </ul>
-        );
-    }
-}
+// class UserList extends React.Component {
+//     render() {
+//         return (
+//             <ul>
+//                 {this.props.onlineUser.map(uid => (
+//                     <li key={uid}>
+//                         <button onClick={this.handleClick}>test</button>
+//                     </li>
+//                 ))}
+//             </ul>
+//         );
+//     }
+// }
 
 export default UserPanel;
