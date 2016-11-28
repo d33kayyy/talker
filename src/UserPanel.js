@@ -18,10 +18,12 @@ class UserPanel extends Component {
     componentWillMount() {
         // authenticate user to get access to the database
         this.auth = firebase.auth();
-        console.log('uid=' + this.auth.currentUser.uid);
+        this.uid = this.auth.currentUser.uid;
+        console.log('uid=' + this.uid);
+
         // Add ourselves to presence list when online.
         const amOnline = firebase.database().ref('.info/connected');
-        const userRef = firebase.database().ref('presence/' + firebase.auth().currentUser.uid);
+        const userRef = firebase.database().ref('presence/' + this.uid);
         amOnline.on('value', function (snapshot) {
             if (snapshot.val()) {
                 userRef.onDisconnect().remove();
@@ -30,7 +32,7 @@ class UserPanel extends Component {
         });
 
         // Number of online users is the number of objects in the presence list.
-        const listRef = firebase.database().ref('presence');
+        const listRef = firebase.database().ref('presence'); 
         if (listRef) {
             listRef.on("value", (snap) => {
                 const onlineUser = snap.val();
@@ -38,7 +40,8 @@ class UserPanel extends Component {
 
                     // remove current user
                     var users = Object.keys(onlineUser);
-                    const index = users.indexOf(firebase.auth().currentUser.uid);
+                    const index = users.indexOf(this.uid);
+
                     if (index > -1) {
                         users.splice(index, 1);
                     }
@@ -48,7 +51,6 @@ class UserPanel extends Component {
                     })
                 }
 
-                // console.log(this.state.onlineUser);
             });
         }
     }
@@ -58,8 +60,6 @@ class UserPanel extends Component {
             showChat: true,
             peer: e.target.value
         });
-
-        console.log(this.state.showChat);
     }
 
     render() {
@@ -78,19 +78,5 @@ class UserPanel extends Component {
         )
     }
 }
-
-// class UserList extends React.Component {
-//     render() {
-//         return (
-//             <ul>
-//                 {this.props.onlineUser.map(uid => (
-//                     <li key={uid}>
-//                         <button onClick={this.handleClick}>test</button>
-//                     </li>
-//                 ))}
-//             </ul>
-//         );
-//     }
-// }
 
 export default UserPanel;
