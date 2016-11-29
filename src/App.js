@@ -12,27 +12,39 @@ class App extends Component {
 
         };
 
-        this.handleClick = this.handleClick.bind(this);
+        this.login = this.login.bind(this);
         this.signUp = this.signUp.bind(this);
         this.logout = this.logout.bind(this);
     }
 
     componentWillMount() {
+        // Firebase services
+        this.auth = firebase.auth();
+        this.db = firebase.database();
 
         firebase.auth().onAuthStateChanged(user => {
             if (user) {
-                console.log('app - uid = ' + firebase.auth().currentUser.uid);
+                // Change state for UI
                 this.setState({loggedIn: true});
 
+                this.uid = firebase.auth().currentUser.uid;
+
+                // Remove message when user quit
+                const userMsgRef = this.db.ref('user-messages/' + this.uid);
+        
                 // Add ourselves to presence list when online.
-                const amOnline = firebase.database().ref('.info/connected');
-                const userRef = firebase.database().ref('presence/' + firebase.auth().currentUser.uid);
+                const amOnline = this.db.ref('.info/connected');
+                const userRef = this.db.ref('presence/' + this.uid);
+
                 amOnline.on('value', function (snapshot) {
                     if (snapshot.val()) {
                         userRef.onDisconnect().remove();
                         userRef.set(true);
+
+                        userMsgRef.onDisconnect().remove();
                     }
                 });
+
             } else {
                 console.log('false');
                 this.setState({loggedIn: false});
@@ -40,7 +52,7 @@ class App extends Component {
         });
     }
 
-    handleClick() {
+    login() {
         const email = this.emailInput.value;
         const pwd = this.pwdInput.value;
 
@@ -66,14 +78,19 @@ class App extends Component {
         });
     }
 
-    logout(){
-        // firebase singout
-        const promise = firebase.auth().signOut();
-        promise.catch(e => console.log(e.message));
+    logout() {
 
         // Remove user from online list
-        const userRef = firebase.database().ref('presence/' + firebase.auth().currentUser.uid);
+        const userRef = this.db.ref('presence/' + this.uid);
         userRef.remove();
+
+        // Remove messages
+        const userMsgRef = this.db.ref('user-messages/' + this.uid);
+        userMsgRef.remove();
+
+        // Firebase sign out
+        const promise = firebase.auth().signOut();
+        promise.catch(e => console.log(e.message));
     }
 
 
@@ -90,7 +107,7 @@ class App extends Component {
                 {this.state.loggedIn ? (
                     <div>
                         <button className="btn btn-default" onClick={this.logout}>Logout</button>
-                        <UserPanel uid={firebase.auth().currentUser.uid}/>
+                        <UserPanel />
                     </div>
                 ) : (
                     <div>
@@ -98,7 +115,7 @@ class App extends Component {
 
                         <input className="form-control" placeholder="Email" type='email' ref={(input) => this.emailInput = input}/>
                         <input className="form-control" placeholder="Password" type='password' ref={(input) => this.pwdInput = input}/>
-                        <button className="btn btn-default" onClick={this.handleClick}>Login</button>
+                        <button className="btn btn-default" onClick={this.login}>Login</button>
                         <button className="btn btn-default" onClick={this.signUp}>Signup</button>
 
                     </div>

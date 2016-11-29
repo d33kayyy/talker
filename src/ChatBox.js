@@ -18,32 +18,19 @@ class ChatBox extends Component {
         // authenticate user to get access to the database
         this.auth = firebase.auth();
         this.uid = this.auth.currentUser.uid;
-        // console.log('auth=' + this.auth);
-        console.log('uid=' + this.uid);
 
         // sync
         this.messageRef = firebase.database().ref('user-messages/' + this.uid + '/' + this.props.peer);
-        // this.messageRef.on('value', (snapshot) => {
-        //     const msg = snapshot.val();
+        this.messageRef.on('value', (snapshot) => {
+            const msg = snapshot.val();
 
-        //     console.log('msg=' + msg);
-        //     if (msg != null) {
-        //         this.setState({
-        //             messages: msg
-        //         })
-        //     }
-        // });
+            if (msg != null) {
+                this.setState({
+                    messages: msg
+                })
+            }
+        });
         this.peerMessageRef = firebase.database().ref('user-messages/' + this.props.peer + '/' + this.uid);
-
-
-        // // remove messages when user quit
-        // const amOnline = firebase.database().ref('.info/connected');
-        // amOnline.on('value', function (snapshot) {
-        //     if (snapshot.val()) {
-        //         firebase.database().ref('user-messages/' + this.uid).onDisconnect().remove();
-        //         // this.messageRef.set(true);
-        //     }
-        // });
 
     }
 
@@ -83,7 +70,7 @@ class ChatBox extends Component {
     displayUser(message) {
         var name = '';
 
-        if (this.auth.currentUser && this.uid === message.fromID) {
+        if (this.uid === message.fromID) {
             name = 'You';
         } else {
             name = 'Anonymous';

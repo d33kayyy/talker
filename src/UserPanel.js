@@ -17,10 +17,7 @@ class UserPanel extends Component {
 
     componentWillMount() {
         // authenticate user to get access to the database
-        // this.auth = firebase.auth();
-        // this.uid = this.auth.currentUser.uid;
-        console.log('UP - uid=' + this.props.uid);
-
+        this.uid = firebase.auth().currentUser.uid;
 
         // Number of online users is the number of objects in the presence list.
         const listRef = firebase.database().ref('presence');
@@ -31,7 +28,7 @@ class UserPanel extends Component {
 
                 // remove current user
                 var users = Object.keys(onlineUser);
-                const index = users.indexOf(this.props.uid);
+                const index = users.indexOf(this.uid);
 
                 if (index > -1) {
                     users.splice(index, 1);
@@ -67,12 +64,12 @@ class UserPanel extends Component {
             (this.state.showChat)
                 ? <ChatBox peer={this.state.peer}/>
                 : ( <ul>
-                {this.state.onlineUser.map(uid => (
-                    <li key={uid}>
-                        <button value={uid} onClick={this.handleClick}>{uid}</button>
-                    </li>
-                ))}
-            </ul>)
+                        {this.state.onlineUser.map(uid => (
+                            <li key={uid}>
+                                <button value={uid} onClick={this.handleClick}>{uid}</button>
+                            </li>
+                        ))}
+                    </ul> )
         )
     }
 }
