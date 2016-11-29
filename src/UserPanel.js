@@ -17,42 +17,38 @@ class UserPanel extends Component {
 
     componentWillMount() {
         // authenticate user to get access to the database
-        this.auth = firebase.auth();
-        this.uid = this.auth.currentUser.uid;
-        console.log('uid=' + this.uid);
+        // this.auth = firebase.auth();
+        // this.uid = this.auth.currentUser.uid;
+        console.log('UP - uid=' + this.props.uid);
 
-        // Add ourselves to presence list when online.
-        const amOnline = firebase.database().ref('.info/connected');
-        const userRef = firebase.database().ref('presence/' + this.uid);
-        amOnline.on('value', function (snapshot) {
-            if (snapshot.val()) {
-                userRef.onDisconnect().remove();
-                userRef.set(true);
-            }
-        });
 
         // Number of online users is the number of objects in the presence list.
-        const listRef = firebase.database().ref('presence'); 
-        if (listRef) {
-            listRef.on("value", (snap) => {
-                const onlineUser = snap.val();
-                if (onlineUser != null) {
+        const listRef = firebase.database().ref('presence');
+        // if (listRef) {
+        listRef.on("value", (snap) => {
+            const onlineUser = snap.val();
+            if (onlineUser != null) {
 
-                    // remove current user
-                    var users = Object.keys(onlineUser);
-                    const index = users.indexOf(this.uid);
+                // remove current user
+                var users = Object.keys(onlineUser);
+                const index = users.indexOf(this.props.uid);
 
-                    if (index > -1) {
-                        users.splice(index, 1);
-                    }
-
-                    this.setState({
-                        onlineUser: users
-                    })
+                if (index > -1) {
+                    users.splice(index, 1);
                 }
 
-            });
-        }
+                this.setState({
+                    onlineUser: users
+                })
+
+                if (users.length <1){
+                    this.setState({
+                        showChat: false
+                    });
+                }
+            }
+        });
+        // }
     }
 
     handleClick(e) {
@@ -63,7 +59,9 @@ class UserPanel extends Component {
     }
 
     render() {
-        // if (this.state.onlineUser.length < 2) return <h2>Cannot find any peer :(</h2>;
+        if (this.state.onlineUser.length < 1) {
+            return <h2>Cannot find any peer :(</h2>;
+        }
 
         return (
             (this.state.showChat)
@@ -74,7 +72,7 @@ class UserPanel extends Component {
                         <button value={uid} onClick={this.handleClick}>{uid}</button>
                     </li>
                 ))}
-                </ul>)
+            </ul>)
         )
     }
 }

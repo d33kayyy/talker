@@ -17,18 +17,34 @@ class ChatBox extends Component {
     componentWillMount() {
         // authenticate user to get access to the database
         this.auth = firebase.auth();
+        this.uid = this.auth.currentUser.uid;
+        // console.log('auth=' + this.auth);
+        console.log('uid=' + this.uid);
 
         // sync
-        this.messageRef = firebase.database().ref('messages');
+        this.messageRef = firebase.database().ref('user-messages/' + this.uid + '/' + this.props.peer);
         // this.messageRef.on('value', (snapshot) => {
         //     const msg = snapshot.val();
-        //
+
+        //     console.log('msg=' + msg);
         //     if (msg != null) {
         //         this.setState({
         //             messages: msg
         //         })
         //     }
         // });
+        this.peerMessageRef = firebase.database().ref('user-messages/' + this.props.peer + '/' + this.uid);
+
+
+        // // remove messages when user quit
+        // const amOnline = firebase.database().ref('.info/connected');
+        // amOnline.on('value', function (snapshot) {
+        //     if (snapshot.val()) {
+        //         firebase.database().ref('user-messages/' + this.uid).onDisconnect().remove();
+        //         // this.messageRef.set(true);
+        //     }
+        // });
+
     }
 
     updateMsg(event) {
@@ -41,13 +57,17 @@ class ChatBox extends Component {
 
         // construct the message
         const nextMsg = {
-            fromID: this.auth.currentUser.uid,
+            fromID: this.uid,
             text: this.state.message
         };
 
         // create a new node (push the message) on Firebase
         const promise = this.messageRef.push(nextMsg);
         promise.catch(e => console.log(e.message));
+
+
+        const promise2 = this.peerMessageRef.push(nextMsg);
+        promise2.catch(e => console.log(e.message));
 
         console.log('send: ' + this.state.message);
 
@@ -63,7 +83,7 @@ class ChatBox extends Component {
     displayUser(message) {
         var name = '';
 
-        if (this.auth.currentUser && this.auth.currentUser.uid === message.fromID) {
+        if (this.auth.currentUser && this.uid === message.fromID) {
             name = 'You';
         } else {
             name = 'Anonymous';
