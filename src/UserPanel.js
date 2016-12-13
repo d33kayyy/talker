@@ -45,7 +45,6 @@ class UserPanel extends Component {
                 }
             }
         });
-        // }
     }
 
     handleClick(e) {
@@ -63,13 +62,17 @@ class UserPanel extends Component {
         return (
             (this.state.showChat)
                 ? <ChatBox peer={this.state.peer}/>
-                : ( <ul>
-                        {this.state.onlineUser.map(uid => (
-                            <li key={uid}>
-                                <button value={uid} onClick={this.handleClick}>{uid}</button>
-                            </li>
-                        ))}
-                    </ul> )
+                : ( <div>
+                        <h3>Online users</h3>
+                        <ul>
+                            {this.state.onlineUser.map(uid => (
+                                <li key={uid}>
+                                    <button value={uid} onClick={this.handleClick}>{uid}</button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                     )
         )
     }
 }

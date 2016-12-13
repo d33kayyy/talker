@@ -7,6 +7,7 @@ class ChatBox extends Component {
     constructor(props, context) {
         super(props, context);
         this.updateMsg = this.updateMsg.bind(this);
+        this.uploadImg = this.uploadImg.bind(this);
         this.send = this.send.bind(this);
         this.state = {
             message: '',
@@ -18,6 +19,12 @@ class ChatBox extends Component {
         // authenticate user to get access to the database
         this.auth = firebase.auth();
         this.uid = this.auth.currentUser.uid;
+
+        // Firebase storage to upload image
+        this.storage = firebase.storage();
+
+        // Loading image when uploading file
+        this.LOADING_IMAGE_URL = 'https://www.google.com/images/spin-32.gif'
 
         // sync
         this.messageRef = firebase.database().ref('user-messages/' + this.uid + '/' + this.props.peer);
@@ -32,6 +39,15 @@ class ChatBox extends Component {
         });
         this.peerMessageRef = firebase.database().ref('user-messages/' + this.props.peer + '/' + this.uid);
 
+    }
+
+    componentWillUnmount() {
+        // Remove previous messages
+        const userMsgRef = firebase.database().ref('user-messages/' + this.uid);
+        userMsgRef.remove();
+
+        const promise = this.storage.ref(this.uid + '/').delete();
+        promise.catch(e => console.log(e.message));
     }
 
     updateMsg(event) {
@@ -67,8 +83,46 @@ class ChatBox extends Component {
         event.preventDefault();
     }
 
-    displayUser(message) {
-        var name = '';
+    uploadImg(event) {
+        var file = event.target.files[0];
+        this.fileChooser.value = '';
+
+        if (!file.type.match('image.*')) {
+            alert('You can only share images.');
+        }
+
+        const image = {
+            fromID: this.uid,
+            imageUrl: this.LOADING_IMAGE_URL,
+        };
+
+        this.messageRef.push(image).then(data => {
+            // Upload the image to Firebase Storage.
+            this.storage.ref(this.uid + '/' + Date.now() + '/' + file.name)
+                .put(file, {contentType: file.type})
+                .then(snapshot => {
+                    // Get the file's Storage URI and update the chat message placeholder.
+                    // var filePath = snapshot.metadata.fullPath;
+                    // data.update({imageUrl: this.storage.ref(filePath).toString()});
+
+                    var filePath = snapshot.metadata.downloadURLs[0];
+                    data.update({imageUrl: filePath});
+
+                    // push new image to peer chat
+                    const promise2 = this.peerMessageRef.push({
+                        fromID: this.uid,
+                        imageUrl: filePath,
+                    });
+                    promise2.catch(e => console.log(e.message));
+                })
+                .catch(e => {
+                    console.error('There was an error uploading a file to Firebase Storage:', e.message);
+                });
+        });
+    }
+
+    displayMessage(message) {
+        let name = '';
 
         if (this.uid === message.fromID) {
             name = 'You';
@@ -76,30 +130,59 @@ class ChatBox extends Component {
             name = 'Anonymous';
         }
 
+        var content = '';
+        if (message.text) {
+            content = message.text
+        } else if (message.imageUrl) {
+            let imageUri = message.imageUrl;
+            var src = '';
+
+            if (imageUri.startsWith('gs://')) {
+                this.storage.refFromURL(imageUri).getMetadata().then(metadata => {
+                    console.log(metadata.downloadURLs[0])
+                    src = metadata.downloadURLs[0];
+                });
+            } else {
+                src = imageUri
+            }
+
+            console.log(src);
+            content = <img className='img-responsive' src={src} alt='img'/>;
+        }
+
+
         return (
-            <span><strong>{name}</strong>: {message.text}</span>
+            <div><strong>{name}</strong>: {content}</div>
         )
     }
 
+
     render() {
-        console.log('render');
+        // console.log('render');
         const messages = Object.keys(this.state.messages).map((key) => {
             // console.log(key);
             return (
-                <li key={key}>
-                    {this.displayUser(this.state.messages[key])}
-                </li>
+                <div key={key}>
+                    {this.displayMessage(this.state.messages[key])}
+                </div>
             )
         });
 
         return (
             <div className="col-md-offset-3 col-md-6">
                 <form onSubmit={this.send}>
-                    <input className="form-control" type="text" placeholder="Message"
-                           onChange={this.updateMsg}
-                           ref={(input) => this.textInput = input}/>
-
-                    <input className="btn" type="submit" disabled={!this.state.message} value='Send'/>
+                    <div className="input-group">
+                        <input className="form-control" type="text" placeholder="Message"
+                               onChange={this.updateMsg}
+                               ref={(input) => this.textInput = input}/>
+                        <span className="input-group-btn">
+                        <input className="btn" type="submit" disabled={!this.state.message} value='Send'/>
+                        </span>
+                    </div>
+                </form>
+                <form id="image-form" action="#">
+                    <input id="mediaCapture" type="file" accept="image/*,capture=camera"
+                           onChange={this.uploadImg} ref={(input) => this.fileChooser = input}/>
                 </form>
                 <ul>
                     {messages}
