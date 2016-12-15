@@ -49,7 +49,7 @@ class App extends Component {
                 });
 
             } else {
-                console.log('false');
+                // console.log('false');
                 this.setState({loggedIn: false});
             }
         });
