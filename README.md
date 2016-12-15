@@ -27,3 +27,23 @@ Install Firebase: go to project directory
 
 
 
+If you see this:
+
+    npm ERR! UpScore@0.6.0 start: `react-scripts start`
+    npm ERR! spawn ENOENT
+
+It just means something went wrong when dependencies were installed the first time.
+
+I suggest doing these three steps:
+
+    - to update npm because it is sometimes buggy.
+
+        npm install -g npm@latest
+
+    - to remove the existing modules.
+
+        rm -rf node_modules
+
+    - to re-install the project dependencies.
+
+        npm install

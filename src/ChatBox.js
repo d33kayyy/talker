@@ -43,11 +43,10 @@ class ChatBox extends Component {
 
     componentWillUnmount() {
         // Remove previous messages
-        const userMsgRef = firebase.database().ref('user-messages/' + this.uid);
-        userMsgRef.remove();
-
-        const promise = this.storage.ref(this.uid + '/').delete();
-        promise.catch(e => console.log(e.message));
+        if (this.auth.currentUser) {
+            const userMsgRef = firebase.database().ref('user-messages/' + this.uid);
+            userMsgRef.remove();
+        }
     }
 
     updateMsg(event) {
@@ -139,14 +138,14 @@ class ChatBox extends Component {
 
             if (imageUri.startsWith('gs://')) {
                 this.storage.refFromURL(imageUri).getMetadata().then(metadata => {
-                    console.log(metadata.downloadURLs[0])
+                    // console.log(metadata.downloadURLs[0])
                     src = metadata.downloadURLs[0];
                 });
             } else {
                 src = imageUri
             }
 
-            console.log(src);
+            // console.log(src);
             content = <img className='img-responsive' src={src} alt='img'/>;
         }
 

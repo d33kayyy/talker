@@ -55,7 +55,7 @@ class App extends Component {
         });
     }
 
-    login() {
+    login(e) {
         const email = this.emailInput.value;
         const pwd = this.pwdInput.value;
 
@@ -66,6 +66,7 @@ class App extends Component {
                 errorMsg: e.message
             })
         });
+        e.preventDefault();
     }
 
     signUp() {
@@ -123,21 +124,24 @@ class App extends Component {
                                         <h3 className="panel-title">Sign In</h3>
                                     </div>
                                     <div className="panel-body">
-                                        <div className="form-group">
-                                            <input className="form-control" placeholder="Email" type='email'
-                                                   ref={(input) => this.emailInput = input}/>
-                                        </div>
-                                        <div className="form-group">
-                                            <input className="form-control" placeholder="Password" type='password'
-                                                   ref={(input) => this.pwdInput = input}/>
-                                        </div>
 
-                                        <div>
-                                            <button className="btn btn-default" onClick={this.login}>Login</button>
-                                            <button className="btn btn-default pull-right" onClick={this.signUp}>
-                                                Signup
-                                            </button>
-                                        </div>
+                                        <form onSubmit={this.login}>
+
+                                            <div className="form-group">
+                                                <input className="form-control" placeholder="Email" type='email'
+                                                       ref={(input) => this.emailInput = input}/>
+                                            </div>
+                                            <div className="form-group">
+                                                <input className="form-control" placeholder="Password" type='password'
+                                                       ref={(input) => this.pwdInput = input}/>
+                                            </div>
+
+                                            <button className="btn btn-default pull-left" type='submit'>Login</button>
+
+                                        </form>
+                                        <button className="btn btn-default pull-right" onClick={this.signUp}>
+                                            Signup
+                                        </button>
                                     </div>
                                 </div>
                             </div>
