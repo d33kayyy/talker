@@ -26,8 +26,10 @@ class ChatBox extends Component {
         // Loading image when uploading file
         this.LOADING_IMAGE_URL = 'https://www.google.com/images/spin-32.gif'
 
+        this.channel = this.props.channel;
+
         // sync
-        this.messageRef = firebase.database().ref('user-messages/' + this.uid + '/' + this.props.peer);
+        this.messageRef = firebase.database().ref('channel/' + this.channel + '/messages');
         this.messageRef.on('value', (snapshot) => {
             const msg = snapshot.val();
 
@@ -37,15 +39,15 @@ class ChatBox extends Component {
                 })
             }
         });
-        this.peerMessageRef = firebase.database().ref('user-messages/' + this.props.peer + '/' + this.uid);
+        // this.peerMessageRef = firebase.database().ref('user-messages/' + this.props.peer + '/' + this.uid);
 
     }
 
     componentWillUnmount() {
         // Remove previous messages
         if (this.auth.currentUser) {
-            const userMsgRef = firebase.database().ref('user-messages/' + this.uid);
-            userMsgRef.remove();
+            this.messageRef.remove();
+            firebase.database().ref('channel/' + this.channel).remove();
         }
     }
 
@@ -66,10 +68,6 @@ class ChatBox extends Component {
         // create a new node (push the message) on Firebase
         const promise = this.messageRef.push(nextMsg);
         promise.catch(e => console.log(e.message));
-
-
-        const promise2 = this.peerMessageRef.push(nextMsg);
-        promise2.catch(e => console.log(e.message));
 
         console.log('send: ' + this.state.message);
 
@@ -107,12 +105,6 @@ class ChatBox extends Component {
                     var filePath = snapshot.metadata.downloadURLs[0];
                     data.update({imageUrl: filePath});
 
-                    // push new image to peer chat
-                    const promise2 = this.peerMessageRef.push({
-                        fromID: this.uid,
-                        imageUrl: filePath,
-                    });
-                    promise2.catch(e => console.log(e.message));
                 })
                 .catch(e => {
                     console.error('There was an error uploading a file to Firebase Storage:', e.message);
