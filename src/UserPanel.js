@@ -9,12 +9,17 @@ class UserPanel extends Component {
         super(props, context);
         this.state = {
             onlineUser: [],
-            showChat: false
+            showChat: false,
+            searching: false
         };
-        this.handleClick = this.handleClick.bind(this);
+        // this.handleClick = this.handleClick.bind(this);
         this.channel = '';
         this.gotChannel = false;
 
+        this.selectChannel = this.selectChannel.bind(this);
+    }
+
+    componentWillMount() {
         // authenticate user to get access to the database
         this.auth = firebase.auth();
         this.uid = firebase.auth().currentUser.uid;
@@ -36,19 +41,24 @@ class UserPanel extends Component {
 
                 this.setState({
                     onlineUser: users
-                })
+                });
 
                 if (users.length < 1) {
                     this.setState({
-                        showChat: false
+                        showChat: false,
+                        searching: false
                     });
                 }
             }
         });
 
+        // this.selectChannel();
+    }
+
+    selectChannel() {
         // Select channel
         this.channelRef = firebase.database().ref('channel');
-        this.channelRef.on("value", (snap) => {
+        this.channelRef.once("value", (snap) => {
             var numChannel = snap.numChildren();
 
             if (numChannel === 0) {
@@ -81,71 +91,66 @@ class UserPanel extends Component {
                 }
             }
         });
-    }
-
-    createChannel() {
-        this.channelRef.push(true).then(snapshot => {
-            // console.log(snap.key);
-
-            // Count number of user in this channel
-            firebase.database().ref('channel/' + snapshot.key).set({users: 1})
-                .then(data => {
-                    const myChannelRef = firebase.database().ref('channel/' + snapshot.key + '/users');
-                    myChannelRef.on('value', snap => {
-                        console.log('users = ' + snap.val());
-                        if (snap.val() === 2) {
-                            this.setState({
-                                showChat: true,
-                            });
-                        }
-                    });
-                    // myChannelRef.onDisconnect().remove();
-                });
-            this.channel = snapshot.key;
-
+        this.setState({
+            searching: true
         });
     }
 
-    componentWillUnmount() {
-        alert('UserPanel unmounting');
-        // Remove previous messages
-        if (this.auth.currentUser) {
-            firebase.database().ref('channel/' + this.channel).remove();
-        }
-    }
+    createChannel() {
+        this.channelRef.push({users: 1}).then(snapshot => {
+            const myChannelRef = firebase.database().ref('channel/' + snapshot.key + '/users');
+            myChannelRef.on('value', snap => {
+                console.log('users = ' + snap.val());
+                if (snap.val() === 2) {
+                    this.setState({
+                        showChat: true,
+                    });
+                } else {
+                    console.log('showChat = ' + this.state.showChat);
+                    if (this.state.showChat) {
+                        this.setState({
+                            showChat: false,
+                            searching: false
+                        });
+                    }
+                }
+            });
 
-    handleClick(e) {
-        this.setState({
-            showChat: true,
-            peer: e.target.value
+            this.channel = snapshot.key;
         });
     }
 
     render() {
-        if (this.state.onlineUser.length < 1) {
-            return <h2>Cannot find any peer :(</h2>;
+        console.log('RENDER' + this.channel);
+
+        if (this.state.showChat) {
+            return <ChatBox channel={this.channel}/>;
+        } else {
+            if (this.state.searching) {
+                return (
+                    <div className="col-md-4 col-md-offset-4 text-center">
+                        <h2>Searching...</h2>
+                        <div className='progress'>
+                            <div className='progress-bar progress-bar-info progress-bar-striped active'
+                                 role='progressbar'
+                                 aria-valuenow='100'
+                                 aria-valuemin='0'
+                                 aria-valuemax='100'
+                                 style={{width: '100%'}}>
+                            </div>
+                        </div>
+                    </div>
+                );
+
+            } else {
+                return (
+                    <div className="col-md-4 col-md-offset-4 text-center">
+                        <button className="btn btn-info" onClick={this.selectChannel}>Search</button>
+                    </div>
+                );
+            }
         }
 
-        return (
-            (this.state.showChat)
-                ? <ChatBox channel={this.channel}/>
-                : ( <div>
-                    <h2> Searching</h2>
-                    {/* 
-                     <h3>Online users</h3>
-                     <ul>
-                     {this.state.onlineUser.map(uid => (
-                     <li key={uid}>
-                     <button value={uid} onClick={this.handleClick}>{uid}</button>
-                     </li>
-                     ))}
-                     </ul>
-                     */}
-
-
-                </div>
-            )
-        )
     }
 }
 

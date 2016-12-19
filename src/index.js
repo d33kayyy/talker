@@ -7,11 +7,11 @@ import * as firebase from 'firebase';
 
 // Initialize Firebase
 var config = {
-    apiKey: "AIzaSyAndKwBqYycvtO4UYPwPF0DSkxNsNIesAw",
-    authDomain: "talker-test.firebaseapp.com",
-    databaseURL: "https://talker-test.firebaseio.com",
-    storageBucket: "talker-test.appspot.com",
-    messagingSenderId: "234185217177"
+    apiKey: "AIzaSyDucSFmf7ISfPOaE-WZXAv4biMULPo3zxY",
+    authDomain: "talker-37ce2.firebaseapp.com",
+    databaseURL: "https://talker-37ce2.firebaseio.com",
+    storageBucket: "talker-37ce2.appspot.com",
+    messagingSenderId: "635070252811"
 };
 firebase.initializeApp(config);
 

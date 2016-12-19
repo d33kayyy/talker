@@ -24,7 +24,7 @@ class ChatBox extends Component {
         this.storage = firebase.storage();
 
         // Loading image when uploading file
-        this.LOADING_IMAGE_URL = 'https://www.google.com/images/spin-32.gif'
+        this.LOADING_IMAGE_URL = 'https://www.google.com/images/spin-32.gif';
 
         this.channel = this.props.channel;
 
@@ -39,14 +39,12 @@ class ChatBox extends Component {
                 })
             }
         });
-        // this.peerMessageRef = firebase.database().ref('user-messages/' + this.props.peer + '/' + this.uid);
 
     }
 
     componentWillUnmount() {
         // Remove previous messages
         if (this.auth.currentUser) {
-            this.messageRef.remove();
             firebase.database().ref('channel/' + this.channel).remove();
         }
     }

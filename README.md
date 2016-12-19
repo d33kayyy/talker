@@ -38,7 +38,7 @@ I suggest doing these three steps:
 
     - to update npm because it is sometimes buggy.
 
-        npm install -g npm@latest
+        sudo npm install -g npm@latest
 
     - to remove the existing modules.
 
