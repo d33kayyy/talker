@@ -42,6 +42,25 @@ class ChatBox extends Component {
 
     }
 
+    componentDidMount() {
+        // Remove channel when user disconnect
+        const amOnline = firebase.database().ref('.info/connected');
+        const channelRef = firebase.database().ref('channel/' + this.channel);
+        amOnline.on('value', function (snapshot) {
+            if (snapshot.val()) {
+                channelRef.onDisconnect().remove();
+                console.log('here');
+            }
+        });
+
+        firebase.auth().onAuthStateChanged(function (user) {
+            if (!user) {
+                firebase.database().ref('channel/' + this.channel).remove();
+            }
+        });
+
+    }
+
     componentWillUnmount() {
         // Remove previous messages
         if (this.auth.currentUser) {
@@ -86,28 +105,30 @@ class ChatBox extends Component {
             alert('You can only share images.');
         }
 
-        const image = {
-            fromID: this.uid,
-            imageUrl: this.LOADING_IMAGE_URL,
-        };
 
-        this.messageRef.push(image).then(data => {
-            // Upload the image to Firebase Storage.
-            this.storage.ref(this.uid + '/' + Date.now() + '/' + file.name)
-                .put(file, {contentType: file.type})
-                .then(snapshot => {
-                    // Get the file's Storage URI and update the chat message placeholder.
-                    // var filePath = snapshot.metadata.fullPath;
-                    // data.update({imageUrl: this.storage.ref(filePath).toString()});
+        // Upload the image to Firebase Storage.
+        this.storage.ref(this.uid + '/' + Date.now() + '/' + file.name)
+            .put(file, {contentType: file.type})
+            .then(snapshot => {
+                // Get the file's Storage URI and update the chat message placeholder.
+                // var filePath = snapshot.metadata.fullPath;
+                // data.update({imageURL: this.storage.ref(filePath).toString()});
 
-                    var filePath = snapshot.metadata.downloadURLs[0];
-                    data.update({imageUrl: filePath});
+                var filePath = snapshot.metadata.downloadURLs[0];
+                // data.update({imageURL: filePath});
 
-                })
-                .catch(e => {
-                    console.error('There was an error uploading a file to Firebase Storage:', e.message);
-                });
-        });
+                const image = {
+                    fromID: this.uid,
+                    imageURL: filePath,
+                };
+
+                this.messageRef.push(image);
+
+            })
+            .catch(e => {
+                console.error('There was an error uploading a file to Firebase Storage:', e.message);
+            });
+
     }
 
     displayMessage(message) {
@@ -122,23 +143,22 @@ class ChatBox extends Component {
         var content = '';
         if (message.text) {
             content = message.text
-        } else if (message.imageUrl) {
-            let imageUri = message.imageUrl;
-            var src = '';
-
+        } else if (message.imageURL) {
+            let imageUri = message.imageURL;
+            this.src = '';
+            // console.log(imageUri)
             if (imageUri.startsWith('gs://')) {
                 this.storage.refFromURL(imageUri).getMetadata().then(metadata => {
-                    // console.log(metadata.downloadURLs[0])
-                    src = metadata.downloadURLs[0];
+                    console.log(metadata.downloadURLs[0]);
+                    this.src = metadata.downloadURLs[0];
                 });
             } else {
-                src = imageUri
+                this.src = imageUri
             }
 
             // console.log(src);
-            content = <img className='img-responsive' src={src} alt='img'/>;
+            content = <img className='img-responsive' src={this.src} alt='img'/>;
         }
-
 
         return (
             <div><strong>{name}</strong>: {content}</div>

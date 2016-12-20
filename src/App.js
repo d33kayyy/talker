@@ -14,7 +14,6 @@ class App extends Component {
 
         this.login = this.login.bind(this);
         this.signUp = this.signUp.bind(this);
-        this.logout = this.logout.bind(this);
     }
 
     componentWillMount() {
@@ -32,9 +31,6 @@ class App extends Component {
 
                 this.uid = firebase.auth().currentUser.uid;
 
-                // Remove message when user quit
-                const userMsgRef = this.db.ref('user-messages/' + this.uid);
-
                 // Add ourselves to presence list when online.
                 const amOnline = this.db.ref('.info/connected');
                 const userRef = this.db.ref('presence/' + this.uid);
@@ -43,8 +39,7 @@ class App extends Component {
                     if (snapshot.val()) {
                         userRef.onDisconnect().remove();
                         userRef.set(true);
-
-                        userMsgRef.onDisconnect().remove();
+                        console.log('at App');
                     }
                 });
 
@@ -82,22 +77,6 @@ class App extends Component {
         });
     }
 
-    logout() {
-
-        // Remove user from online list
-        const userRef = this.db.ref('presence/' + this.uid);
-        userRef.remove();
-
-        // Remove messages
-        const userMsgRef = this.db.ref('user-messages/' + this.uid);
-        userMsgRef.remove();
-
-        // Firebase sign out
-        const promise = firebase.auth().signOut();
-        promise.catch(e => console.log(e.message));
-    }
-
-
     render() {
         // error message
         let errorAlert = null;
@@ -108,48 +87,44 @@ class App extends Component {
         return (
             <div className="container">
 
-                {this.state.loggedIn ? (
-                    <div>
-                        <button className="btn btn-default pull-right" onClick={this.logout}>Logout</button>
-                        <UserPanel />
-                    </div>
-                ) : (
-                    <div className="row">
-                        <div className="col-md-12">
-                            {errorAlert}
+                {this.state.loggedIn ? (<UserPanel />) :
+                    (
+                        <div className="row">
+                            <div className="col-md-12">
+                                {errorAlert}
 
-                            <div className="modal-dialog">
-                                <div className="modal-content">
-                                    <div className="panel-heading">
-                                        <h3 className="panel-title">Sign In</h3>
-                                    </div>
-                                    <div className="panel-body">
+                                <div className="modal-dialog">
+                                    <div className="modal-content">
+                                        <div className="panel-heading">
+                                            <h3 className="panel-title">Sign In</h3>
+                                        </div>
+                                        <div className="panel-body">
 
-                                        <form onSubmit={this.login}>
+                                            <form onSubmit={this.login}>
 
-                                            <div className="form-group">
-                                                <input className="form-control" placeholder="Email" type='email'
-                                                       ref={(input) => this.emailInput = input}/>
-                                            </div>
-                                            <div className="form-group">
-                                                <input className="form-control" placeholder="Password" type='password'
-                                                       ref={(input) => this.pwdInput = input}/>
-                                            </div>
+                                                <div className="form-group">
+                                                    <input className="form-control" placeholder="Email" type='email'
+                                                           ref={(input) => this.emailInput = input}/>
+                                                </div>
+                                                <div className="form-group">
+                                                    <input className="form-control" placeholder="Password"
+                                                           type='password'
+                                                           ref={(input) => this.pwdInput = input}/>
+                                                </div>
 
-                                            <button className="btn btn-default pull-left" type='submit'>Login</button>
+                                                <button className="btn btn-default pull-left" type='submit'>Login
+                                                </button>
 
-                                        </form>
-                                        <button className="btn btn-default pull-right" onClick={this.signUp}>
-                                            Signup
-                                        </button>
+                                            </form>
+                                            <button className="btn btn-default pull-right" onClick={this.signUp}>
+                                                Signup
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                ) }
-
+                    ) }
             </div>
         )
     }
