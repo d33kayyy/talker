@@ -1,49 +1,50 @@
+# Talker
 
-# Installation #
+An anonymous chat app using ReactJS and Firebase
+
+## Getting Started
+
+
+### Prerequisites
+
 
 Install npm (Node package manager)
 
+```
+curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
 
-    curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-    sudo apt-get install -y nodejs
+### Installing
 
-
-Install create-react-app
-
-
-    sudo npm install -g create-react-app
-
-
-Create react app
+This app was created using [create-react-app](https://github.com/facebookincubator/create-react-app)
 
 
-    create-react-app [app_name]
+Go to project directory, install packages Firebase: 
 
+```
+npm install react react-dom firebase --save
+```
 
-Install Firebase: go to project directory
+## Running locally
 
+To run the app locally (still requires Internet connection to synchronize data with Firebase)
 
-    npm install firebase --save
+```
+npm start
+```
 
+## Deployment
+To create a production build, use 
 
+```
+npm run build
+```
 
-If you see this:
+Instructions to deploy to [Heroku](https://www.heroku.com/) can be found [here](https://github.com/mars/create-react-app-buildpack)
 
-    npm ERR! UpScore@0.6.0 start: `react-scripts start`
-    npm ERR! spawn ENOENT
+## Built With
 
-It just means something went wrong when dependencies were installed the first time.
-
-I suggest doing these three steps:
-
-    - to update npm because it is sometimes buggy.
-
-        sudo npm install -g npm@latest
-
-    - to remove the existing modules.
-
-        rm -rf node_modules
-
-    - to re-install the project dependencies.
-
-        npm install
+* [ReactJS](https://facebook.github.io/react/)
+* [Firebase](https://www.firebase.com/)
+* [Bootstrap3](http://getbootstrap.com/)
