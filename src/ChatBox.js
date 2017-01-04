@@ -24,7 +24,7 @@ class ChatBox extends Component {
         this.storage = firebase.storage();
 
         // Loading image when uploading file
-        this.LOADING_IMAGE_URL = 'https://www.google.com/images/spin-32.gif';
+        // this.LOADING_IMAGE_URL = 'https://www.google.com/images/spin-32.gif';
 
         this.channel = this.props.channel;
 
@@ -75,7 +75,10 @@ class ChatBox extends Component {
     }
 
     send(event) {
-
+        event.preventDefault();
+        if (!this.state.message) {
+            return
+        }
         // construct the message
         const nextMsg = {
             fromID: this.uid,
@@ -132,21 +135,14 @@ class ChatBox extends Component {
     }
 
     displayMessage(message) {
-        let name = '';
-
-        if (this.uid === message.fromID) {
-            name = 'You';
-        } else {
-            name = 'Anonymous';
-        }
 
         var content = '';
         if (message.text) {
-            content = message.text
+            content = <p>{message.text}</p>
         } else if (message.imageURL) {
             let imageUri = message.imageURL;
             this.src = '';
-            // console.log(imageUri)
+
             if (imageUri.startsWith('gs://')) {
                 this.storage.refFromURL(imageUri).getMetadata().then(metadata => {
                     console.log(metadata.downloadURLs[0]);
@@ -156,13 +152,26 @@ class ChatBox extends Component {
                 this.src = imageUri
             }
 
-            // console.log(src);
             content = <img className='img-responsive' src={this.src} alt='img'/>;
         }
 
-        return (
-            <div><strong>{name}</strong>: {content}</div>
-        )
+        if (this.uid === message.fromID) {
+            return (
+                <div className="row msg_container base_sent">
+                    <div className="messages msg_sent">
+                        {content}
+                    </div>
+                </div>
+            )
+        } else {
+            return (
+                <div className="row msg_container">
+                    <div className="messages msg_receive">
+                        {content}
+                    </div>
+                </div>
+            )
+        }
     }
 
 
@@ -178,24 +187,35 @@ class ChatBox extends Component {
         });
 
         return (
-            <div className="col-md-offset-3 col-md-6">
-                <form onSubmit={this.send}>
-                    <div className="input-group">
-                        <input className="form-control" type="text" placeholder="Message"
-                               onChange={this.updateMsg}
-                               ref={(input) => this.textInput = input}/>
-                        <span className="input-group-btn">
-                        <input className="btn" type="submit" disabled={!this.state.message} value='Send'/>
-                        </span>
+            <div className="row col-xs-8 col-md-6 col-md-offset-3">
+                <div className="col-xs-12 col-md-12">
+                    <div className="panel panel-primary">
+                        <div className="panel-heading top-bar">
+                            <div className="col-md-12 col-xs-12">
+                                <h3 className="panel-title"><i className="fa fa-comments-o"> </i>
+                                    Talker</h3>
+                            </div>
+                        </div>
+                        <div className="panel-body msg_container_base" id="chatbox">
+                            {messages}
+                        </div>
+
+                        <div className="panel-footer">
+                            <form onSubmit={this.send}>
+                                <div className="form-group">
+                                    <input className="form-control" type="text" placeholder="Write your message here..."
+                                           onChange={this.updateMsg}
+                                           ref={(input) => this.textInput = input}/>
+                                </div>
+                            </form>
+                            <form id="image-form" action="#">
+                                <input id="mediaCapture" type="file"
+                                       accept="image/*,capture=camera"
+                                       onChange={this.uploadImg} ref={(input) => this.fileChooser = input}/>
+                            </form>
+                        </div>
                     </div>
-                </form>
-                <form id="image-form" action="#">
-                    <input id="mediaCapture" type="file" accept="image/*,capture=camera"
-                           onChange={this.uploadImg} ref={(input) => this.fileChooser = input}/>
-                </form>
-                <ul>
-                    {messages}
-                </ul>
+                </div>
             </div>
         )
     }

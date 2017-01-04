@@ -92,7 +92,15 @@ class App extends Component {
                         <div className="row">
                             <div className="col-md-12">
                                 {errorAlert}
-
+                                <div className="row">
+                                    <div className='col-md-2 col-md-offset-4'>
+                                        <img src={'talk-1.png'} alt="boohoo" className="img-responsive"/>
+                                    </div>{/*
+                                    */}<div className='col-md-2'>
+                                        <h1>Talker</h1>
+                                    </div>
+                                </div>
+                                
                                 <div className="modal-dialog">
                                     <div className="modal-content">
                                         <div className="panel-heading">
